@@ -2,9 +2,54 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Download, Send } from "lucide-react";
 import { heroContent, stats } from "@/data/portfolio";
 
+interface Resume {
+  id: string;
+  fileName: string;
+  path: string;
+  size: number;
+  uploadedAt: string;
+}
+
+interface ProfilePhoto {
+  exists: boolean;
+  path?: string;
+  fileName?: string;
+}
+
 export function HeroSection() {
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [profilePhoto, setProfilePhoto] = useState<ProfilePhoto>({ exists: false });
   const phrases = useMemo(() => heroContent.typingPhrases, []);
+
+  useEffect(() => {
+    const fetchResumes = async () => {
+      try {
+        const response = await fetch("/api/resumes");
+        if (response.ok) {
+          const data = await response.json();
+          setResumes(data.resumes || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch resumes:", error);
+      }
+    };
+
+    const fetchProfilePhoto = async () => {
+      try {
+        const response = await fetch("/api/profile-photo");
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePhoto(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile photo:", error);
+      }
+    };
+
+    fetchResumes();
+    fetchProfilePhoto();
+  }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -46,15 +91,17 @@ export function HeroSection() {
             View projects
             <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-1 group-hover:-translate-y-1" />
           </a>
-          <a
-            href={heroContent.resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80 transition hover:border-primary/60 hover:text-foreground"
-          >
-            Download resume
-            <Download className="h-4 w-4" />
-          </a>
+          {resumes.length > 0 && (
+            <a
+              href={resumes[0].path}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80 transition hover:border-primary/60 hover:text-foreground"
+            >
+              Download resume
+              <Download className="h-4 w-4" />
+            </a>
+          )}
           <a
             href="#contact"
             className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/60 transition hover:text-primary"
@@ -76,7 +123,7 @@ export function HeroSection() {
               <div className="absolute inset-4 rounded-[2.3rem] border border-white/10 bg-black/80" />
               <div className="absolute inset-[22px] rounded-[2rem] border border-primary/60" />
               <img
-                src="https://shahe-aalam-ansari.netlify.app/images/shaheimg1.png"
+                src={profilePhoto.exists ? profilePhoto.path : "https://shahe-aalam-ansari.netlify.app/images/shaheimg1.png"}
                 alt="Shahe Aalam portrait"
                 className="relative z-10 h-full w-full rounded-[1.9rem] object-cover shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
                 loading="lazy"

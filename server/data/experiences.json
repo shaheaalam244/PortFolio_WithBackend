@@ -1,0 +1,36 @@
+[
+  {
+    "id": "full-stack-dev",
+    "title": "Full Stack Web Development",
+    "organisation": "Independent + Internship",
+    "period": "2024 — Present",
+    "status": "Pursuing",
+    "description": "Developing responsive full-stack applications with modern JavaScript tooling, delivering end-to-end product experiences.",
+    "skills": [
+      "HTML",
+      "CSS",
+      "Tailwind",
+      "JavaScript",
+      "React",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "MySQL",
+      "Git",
+      "REST APIs",
+      "Responsive Design"
+    ]
+  },
+  {
+    "id": "diploma-computer-apps",
+    "title": "Diploma in Computer Applications",
+    "organisation": "National Institute for Technical Education",
+    "period": "2023 — 2024",
+    "description": "Strengthened foundations across Python, Java, and C while experimenting with automation and supportive tooling.",
+    "skills": [
+      "Python",
+      "Java",
+      "C Language"
+    ]
+  }
+]

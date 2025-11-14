@@ -1,7 +1,43 @@
 import { education, experiences } from "@/data/portfolio";
+import { useState, useEffect } from "react";
 import { SectionHeading } from "./section-heading";
 
 export function ExperienceSection() {
+  const [dynamicExperiences, setDynamicExperiences] = useState<any[]>([]);
+  const [dynamicEducation, setDynamicEducation] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const response = await fetch("/api/experiences");
+        if (response.ok) {
+          const data = await response.json();
+          setDynamicExperiences(data.experiences || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch experiences:", error);
+      }
+    };
+
+    const fetchEducation = async () => {
+      try {
+        const response = await fetch("/api/education");
+        if (response.ok) {
+          const data = await response.json();
+          setDynamicEducation(data.education || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch education:", error);
+      }
+    };
+
+    fetchExperiences();
+    fetchEducation();
+  }, []);
+
+  const displayExperiences = dynamicExperiences.length > 0 ? dynamicExperiences : experiences;
+  const displayEducation = dynamicEducation.length > 0 ? dynamicEducation : education;
+
   return (
     <section id="experience" className="relative flex flex-col gap-16 py-24">
       <SectionHeading
@@ -12,7 +48,7 @@ export function ExperienceSection() {
       <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
         <ol className="relative space-y-10 border-l border-white/10 pl-8">
           <div className="absolute left-[-0.6rem] top-1 h-full w-0.5 bg-gradient-to-b from-primary/60 via-white/10 to-transparent" />
-          {experiences.map((experience) => (
+          {displayExperiences.map((experience) => (
             <li key={`${experience.title}-${experience.organisation}`} className="relative rounded-3xl border border-white/10 bg-card/60 p-8 shadow-inner-glow">
               <span className="absolute -left-[1.85rem] top-10 h-3 w-3 rounded-full border border-white/40 bg-primary" />
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -46,7 +82,7 @@ export function ExperienceSection() {
             Formal programmes that sharpened my analytical thinking, collaboration, and technology leadership.
           </p>
           <div className="space-y-5">
-            {education.map((item) => (
+            {displayEducation.map((item) => (
               <div
                 key={`${item.title}-${item.institution}`}
                 className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-foreground/70"

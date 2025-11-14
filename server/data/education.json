@@ -1,0 +1,23 @@
+[
+  {
+    "id": "btech-cse-ai-ml",
+    "period": "2023 — 2027",
+    "title": "Bachelor of Technology (CSE AI & ML)",
+    "institution": "Bansal Institute of Engineering & Technology, Lucknow",
+    "detail": "Current SGPA: 7.6 · Building expertise across AI, machine learning, and product development."
+  },
+  {
+    "id": "intermediate",
+    "period": "2021 — 2019",
+    "title": "Intermediate",
+    "institution": "Sumitra Devi Inter College, Paikauli (Deoria)",
+    "detail": "Graduated with first class distinction, focusing on science and mathematics."
+  },
+  {
+    "id": "higher-secondary",
+    "period": "2019 — 2017",
+    "title": "Higher Secondary",
+    "institution": "B.D. Vidya Mandir Intermediates, Hate Khas (Deoria)",
+    "detail": "Completed with first class distinction and leadership in co-curricular activities."
+  }
+]
