@@ -16,6 +16,7 @@ export default function Admin() {
   const [resume, setResume] = useState<File | null>(null);
   const [skillName, setSkillName] = useState("");
   const [skillFounderOf, setSkillFounderOf] = useState("");
+  const [editingSkill, setEditingSkill] = useState<any | null>(null);
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projectImage, setProjectImage] = useState<File | null>(null);
