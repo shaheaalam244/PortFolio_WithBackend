@@ -8,6 +8,7 @@ import {
   removeSkill,
   getProjects,
   addProject,
+  updateProject,
   removeProject,
   getUploadsDir,
   getResumePath,
@@ -137,8 +138,6 @@ router.put("/projects/:projectId", (req: Request, res: Response) => {
     if (!title || !description) {
       return res.status(400).json({ error: "Title and description required" });
     }
-
-    const { updateProject } = require("../data-store");
 
     const project = updateProject(projectId, {
       title,

@@ -1,11 +1,11 @@
 [
   {
     "id": "1763025520375",
-    "title": "ghg",
-    "description": "hhjgjhjk",
-    "image": "/uploads/projects/project-1763025520367.png",
-    "liveUrl": "#",
-    "repoUrl": "#",
+    "title": "Updated Test",
+    "description": "Updated description",
+    "image": "",
+    "liveUrl": "",
+    "repoUrl": "",
     "badge": "Custom",
     "highlights": [],
     "tags": [],
@@ -25,7 +25,11 @@
       "Responsive layouts ensuring seamless browsing across devices.",
       "High-converting CTA strategy driving purchases."
     ],
-    "tags": ["Ecommerce", "Responsive", "Netlify"],
+    "tags": [
+      "Ecommerce",
+      "Responsive",
+      "Netlify"
+    ],
     "company": "Personal Project",
     "year": "2024"
   },
@@ -42,7 +46,11 @@
       "Reservation prompts and feature highlights for customer trust.",
       "Story-driven copy elevating brand voice."
     ],
-    "tags": ["Hospitality", "Landing Page", "Branding"],
+    "tags": [
+      "Hospitality",
+      "Landing Page",
+      "Branding"
+    ],
     "company": "Personal Project",
     "year": "2024"
   },
@@ -59,7 +67,11 @@
       "Testimonials and stats building credibility.",
       "Newsletter capture and CTA-first architecture."
     ],
-    "tags": ["Agency", "Marketing", "UI Design"],
+    "tags": [
+      "Agency",
+      "Marketing",
+      "UI Design"
+    ],
     "company": "Personal Project",
     "year": "2024"
   },
@@ -76,7 +88,11 @@
       "Curated product categories and nutritional insights.",
       "Clear CTAs driving conversions and repeat orders."
     ],
-    "tags": ["Sustainability", "CMS", "Performance"],
+    "tags": [
+      "Sustainability",
+      "CMS",
+      "Performance"
+    ],
     "company": "Personal Project",
     "year": "2024"
   },
@@ -93,7 +109,11 @@
       "AI logic delivering tough competition and replayability.",
       "Built with clean modular JavaScript."
     ],
-    "tags": ["Game", "JavaScript", "AI"],
+    "tags": [
+      "Game",
+      "JavaScript",
+      "AI"
+    ],
     "company": "Personal Project",
     "year": "2024"
   },
@@ -110,7 +130,11 @@
       "Category segmentation tailored for shopper intent.",
       "CTA stack encouraging sign-ups and purchases."
     ],
-    "tags": ["Campaign", "Fashion", "Conversions"],
+    "tags": [
+      "Campaign",
+      "Fashion",
+      "Conversions"
+    ],
     "company": "Personal Project",
     "year": "2024"
   }
