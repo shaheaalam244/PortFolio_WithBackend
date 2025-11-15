@@ -13,7 +13,7 @@ export function ProjectsSection() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("/api/admin/projects");
+        const response = await fetch("http://localhost:3000/api/admin/projects");
         if (response.ok) {
           const data = await response.json();
           setProjects(data.projects || []);

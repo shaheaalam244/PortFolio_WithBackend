@@ -267,7 +267,7 @@ export default function Admin() {
     if (!expTitle.trim() || !expOrganisation.trim() || !expPeriod.trim() || !expDescription.trim()) return;
 
     try {
-      const response = await fetch("/api/admin/experiences", {
+      const response = await fetch("http://localhost:3000/api/admin/experiences", {
         method: editingExperience ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingExperience ? {
@@ -318,7 +318,7 @@ export default function Admin() {
     if (!eduTitle.trim() || !eduInstitution.trim() || !eduPeriod.trim()) return;
 
     try {
-      const response = await fetch("/api/admin/education", {
+      const response = await fetch("http://localhost:3000/api/admin/education", {
         method: editingEducation ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingEducation ? {
@@ -360,7 +360,7 @@ export default function Admin() {
 
   const removeExperience = async (expId: string) => {
     try {
-      const response = await fetch(`/api/admin/experiences/${expId}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/experiences/${expId}`, {
         method: "DELETE",
       });
 
@@ -384,7 +384,7 @@ export default function Admin() {
 
   const removeEducation = async (eduId: string) => {
     try {
-      const response = await fetch(`/api/admin/education/${eduId}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/education/${eduId}`, {
         method: "DELETE",
       });
 
@@ -408,7 +408,7 @@ export default function Admin() {
 
   const fetchSkills = async () => {
     try {
-      const response = await fetch("/api/admin/skills");
+      const response = await fetch("http://localhost:3000/api/admin/skills");
       if (response.ok) {
         const data = await response.json();
         setSkills(data.skills || []);
@@ -423,7 +423,7 @@ export default function Admin() {
     if (!skillName.trim()) return;
 
     try {
-      const response = await fetch("/api/admin/skills", {
+      const response = await fetch("http://localhost:3000/api/admin/skills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -454,7 +454,7 @@ export default function Admin() {
 
   const removeSkill = async (skillId: string) => {
     try {
-      const response = await fetch(`/api/admin/skills/${skillId}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/skills/${skillId}`, {
         method: "DELETE",
       });
 
@@ -478,7 +478,7 @@ export default function Admin() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("/api/admin/projects");
+      const response = await fetch("http://localhost:3000/api/admin/projects");
       if (response.ok) {
         const data = await response.json();
         console.log("Fetched projects:", data.projects);
@@ -496,7 +496,7 @@ export default function Admin() {
     return new Promise((resolve, reject) => {
       reader.onload = async (event) => {
         try {
-          const response = await fetch("/api/admin/project-image", {
+          const response = await fetch("http://localhost:3000/api/admin/project-image", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -544,7 +544,7 @@ export default function Admin() {
         year: new Date().getFullYear().toString(),
       };
 
-      const response = await fetch("/api/admin/projects", {
+      const response = await fetch("http://localhost:3000/api/admin/projects", {
         method: editingProject ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingProject ? { ...projectData, id: editingProject.id } : projectData),
@@ -598,7 +598,7 @@ export default function Admin() {
 
   const deleteProject = async (projectId: string) => {
     try {
-      const response = await fetch(`/api/admin/projects/${projectId}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/projects/${projectId}`, {
         method: "DELETE",
       });
 
@@ -622,7 +622,7 @@ export default function Admin() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch("/api/admin/stats");
+      const response = await fetch("http://localhost:3000/api/admin/stats");
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats || []);
@@ -634,7 +634,7 @@ export default function Admin() {
 
   const updateStat = async (statId: string, value: string, label: string, description: string) => {
     try {
-      const response = await fetch(`/api/admin/stats/${statId}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/stats/${statId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value, label, description }),
