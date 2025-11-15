@@ -2,13 +2,14 @@ import { useMemo, useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { projects as defaultProjects } from "@/data/portfolio";
 import { SectionHeading } from "./section-heading";
 
 const stackLayers = Array.from({ length: 4 });
 
 export function ProjectsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(defaultProjects);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -16,11 +17,14 @@ export function ProjectsSection() {
         const response = await fetch("/api/admin/projects");
         if (response.ok) {
           const data = await response.json();
-          setProjects(data.projects || []);
+          const adminProjects = data.projects || [];
+          // Merge admin projects with default projects
+          const allProjects = [...defaultProjects, ...adminProjects];
+          setProjects(allProjects);
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error);
-        // Keep using empty array on error
+        // Keep using default projects on error
       }
     };
 
@@ -36,16 +40,6 @@ export function ProjectsSection() {
   const goToNext = () => {
     setActiveIndex((prev) => (prev === projects.length - 1 ? 0 : prev + 1));
   };
-
-  if (projects.length === 0) {
-    return (
-      <section id="projects" className="relative flex flex-col gap-16 py-24">
-        <div className="text-center">
-          <p className="text-gray-400">No projects available yet.</p>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section id="projects" className="relative flex flex-col gap-16 py-24">
