@@ -50,7 +50,7 @@ export default function Admin() {
 
   const fetchResumes = async () => {
     try {
-      const response = await fetch("/api/admin/resumes");
+      const response = await fetch("http://localhost:3000/api/admin/resumes");
       if (response.ok) {
         const data = await response.json();
         setResumes(data.resumes || []);
@@ -62,7 +62,7 @@ export default function Admin() {
 
   const fetchProfilePhoto = async () => {
     try {
-      const response = await fetch("/api/admin/profile-photo");
+      const response = await fetch("http://localhost:3000/api/admin/profile-photo");
       if (response.ok) {
         const data = await response.json();
         setCurrentProfilePhoto(data.path || null);
@@ -117,7 +117,7 @@ export default function Admin() {
     try {
       console.log("Uploading profile photo:", profilePhoto.name, "Size:", profilePhoto.size);
 
-      const response = await fetch("/api/admin/profile-photo-upload", {
+      const response = await fetch("http://localhost:3000/api/admin/profile-photo-upload", {
         method: "POST",
         body: formData,
       });
@@ -150,7 +150,7 @@ export default function Admin() {
   const handleRemoveProfilePhoto = async () => {
     if (confirm('Are you sure you want to delete the current profile photo?')) {
       try {
-        const response = await fetch("/api/admin/profile-photo", {
+        const response = await fetch("http://localhost:3000/api/admin/profile-photo", {
           method: "DELETE",
         });
 
@@ -184,7 +184,7 @@ export default function Admin() {
     try {
       console.log("Uploading resume:", resume.name, "Size:", resume.size);
 
-      const response = await fetch("/api/admin/resume", {
+      const response = await fetch("http://localhost:3000/api/admin/resume", {
         method: "POST",
         body: formData,
       });
@@ -216,7 +216,7 @@ export default function Admin() {
 
   const deleteResume = async (fileName: string) => {
     try {
-      const response = await fetch(`/api/admin/resume/${fileName}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/resume/${fileName}`, {
         method: "DELETE",
       });
 
@@ -240,7 +240,7 @@ export default function Admin() {
 
   const fetchExperiences = async () => {
     try {
-      const response = await fetch("/api/admin/experiences");
+      const response = await fetch("http://localhost:3000/api/admin/experiences");
       if (response.ok) {
         const data = await response.json();
         setExperiences(data.experiences || []);
@@ -252,7 +252,7 @@ export default function Admin() {
 
   const fetchEducation = async () => {
     try {
-      const response = await fetch("/api/admin/education");
+      const response = await fetch("http://localhost:3000/api/admin/education");
       if (response.ok) {
         const data = await response.json();
         setEducation(data.education || []);
