@@ -224,7 +224,11 @@ export function getProfilePhotoPath() {
 export function deleteProfilePhoto() {
   const photoPath = getProfilePhotoPath();
   if (fs.existsSync(photoPath)) {
-    fs.rmSync(photoPath, { recursive: true, force: true });
+    const files = fs.readdirSync(photoPath);
+    for (const file of files) {
+      fs.unlinkSync(path.join(photoPath, file));
+    }
+    fs.rmdirSync(photoPath);
   }
 }
 

@@ -1,4 +1,4 @@
-d andimport { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,8 @@ export default function Admin() {
   const [projectLiveUrl, setProjectLiveUrl] = useState("");
   const [projectRepoUrl, setProjectRepoUrl] = useState("");
   const [editingProject, setEditingProject] = useState<any | null>(null);
+  const [editingExperience, setEditingExperience] = useState<any | null>(null);
+  const [editingEducation, setEditingEducation] = useState<any | null>(null);
   const [skills, setSkills] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [stats, setStats] = useState<any[]>([]);
@@ -145,6 +147,33 @@ export default function Admin() {
     }
   };
 
+  const handleRemoveProfilePhoto = async () => {
+    if (confirm('Are you sure you want to delete the current profile photo?')) {
+      try {
+        const response = await fetch("/api/admin/profile-photo", {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          toast({
+            title: "Success",
+            description: "Profile photo removed successfully",
+          });
+          setCurrentProfilePhoto(null);
+          fetchProfilePhoto(); // Refresh to ensure state is updated
+        } else {
+          throw new Error("Delete failed");
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to remove profile photo",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const uploadResume = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resume) return;
@@ -239,9 +268,17 @@ export default function Admin() {
 
     try {
       const response = await fetch("/api/admin/experiences", {
-        method: "POST",
+        method: editingExperience ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(editingExperience ? {
+          id: editingExperience.id,
+          title: expTitle,
+          organisation: expOrganisation,
+          period: expPeriod,
+          status: expStatus,
+          description: expDescription,
+          skills: expSkills.split(",").map(s => s.trim()).filter(s => s),
+        } : {
           title: expTitle,
           organisation: expOrganisation,
           period: expPeriod,
@@ -254,7 +291,7 @@ export default function Admin() {
       if (response.ok) {
         toast({
           title: "Success",
-          description: "Experience added",
+          description: editingExperience ? "Experience updated" : "Experience added",
         });
         setExpTitle("");
         setExpOrganisation("");
@@ -262,14 +299,15 @@ export default function Admin() {
         setExpStatus("");
         setExpDescription("");
         setExpSkills("");
+        setEditingExperience(null);
         fetchExperiences();
       } else {
-        throw new Error("Add failed");
+        throw new Error(editingExperience ? "Update failed" : "Add failed");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add experience",
+        description: `Failed to ${editingExperience ? 'update' : 'add'} experience`,
         variant: "destructive",
       });
     }
@@ -281,12 +319,18 @@ export default function Admin() {
 
     try {
       const response = await fetch("/api/admin/education", {
-        method: "POST",
+        method: editingEducation ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(editingEducation ? {
+          id: editingEducation.id,
+          period: eduPeriod,
           title: eduTitle,
           institution: eduInstitution,
+          detail: eduDetail,
+        } : {
           period: eduPeriod,
+          title: eduTitle,
+          institution: eduInstitution,
           detail: eduDetail,
         }),
       });
@@ -294,20 +338,21 @@ export default function Admin() {
       if (response.ok) {
         toast({
           title: "Success",
-          description: "Education added",
+          description: editingEducation ? "Education updated" : "Education added",
         });
+        setEduPeriod("");
         setEduTitle("");
         setEduInstitution("");
-        setEduPeriod("");
         setEduDetail("");
+        setEditingEducation(null);
         fetchEducation();
       } else {
-        throw new Error("Add failed");
+        throw new Error(editingEducation ? "Update failed" : "Add failed");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add education",
+        description: `Failed to ${editingEducation ? 'update' : 'add'} education`,
         variant: "destructive",
       });
     }
@@ -716,11 +761,7 @@ export default function Admin() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to delete the current profile photo?')) {
-                          // deleteProfilePhotoHandler();
-                        }
-                      }}
+                      onClick={handleRemoveProfilePhoto}
                       disabled={!currentProfilePhoto}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
@@ -1015,6 +1056,7 @@ export default function Admin() {
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
+                            </div>
                           </div>
                         </div>
                       ))
@@ -1131,7 +1173,7 @@ export default function Admin() {
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Add New Experience</CardTitle>
+                  <CardTitle>{editingExperience ? "Edit Experience" : "Add New Experience"}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={addExperience} className="space-y-4">
@@ -1189,10 +1231,25 @@ export default function Admin() {
                         placeholder="e.g., HTML, CSS, JavaScript"
                       />
                     </div>
-                    <Button type="submit" className="w-full">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Experience
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" />
+                        {editingExperience ? "Update Experience" : "Add Experience"}
+                      </Button>
+                      {editingExperience && (
+                        <Button type="button" variant="outline" onClick={() => {
+                          setEditingExperience(null);
+                          setExpTitle("");
+                          setExpOrganisation("");
+                          setExpPeriod("");
+                          setExpStatus("");
+                          setExpDescription("");
+                          setExpSkills("");
+                        }} className="flex-1">
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </form>
                 </CardContent>
               </Card>
@@ -1228,13 +1285,31 @@ export default function Admin() {
                                 ))}
                               </div>
                             </div>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => removeExperience(exp.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingExperience(exp);
+                                  setExpTitle(exp.title);
+                                  setExpOrganisation(exp.organisation);
+                                  setExpPeriod(exp.period);
+                                  setExpStatus(exp.status || "");
+                                  setExpDescription(exp.description);
+                                  setExpSkills(exp.skills.join(", "));
+                                }}
+                                disabled={editingExperience !== null}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeExperience(exp.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))
@@ -1250,7 +1325,7 @@ export default function Admin() {
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Add New Education</CardTitle>
+                  <CardTitle>{editingEducation ? "Edit Education" : "Add New Education"}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={addEducation} className="space-y-4">
@@ -1291,10 +1366,23 @@ export default function Admin() {
                         rows={2}
                       />
                     </div>
-                    <Button type="submit" className="w-full">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Education
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" />
+                        {editingEducation ? "Update Education" : "Add Education"}
+                      </Button>
+                      {editingEducation && (
+                        <Button type="button" variant="outline" onClick={() => {
+                          setEditingEducation(null);
+                          setEduPeriod("");
+                          setEduTitle("");
+                          setEduInstitution("");
+                          setEduDetail("");
+                        }} className="flex-1">
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </form>
                 </CardContent>
               </Card>
@@ -1322,13 +1410,29 @@ export default function Admin() {
                                 <p className="text-sm text-gray-300 mt-2">{edu.detail}</p>
                               )}
                             </div>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => removeEducation(edu.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingEducation(edu);
+                                  setEduPeriod(edu.period);
+                                  setEduTitle(edu.title);
+                                  setEduInstitution(edu.institution);
+                                  setEduDetail(edu.detail || "");
+                                }}
+                                disabled={editingEducation !== null}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeEducation(edu.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))
