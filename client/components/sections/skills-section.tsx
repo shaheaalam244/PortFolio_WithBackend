@@ -1,7 +1,27 @@
+import { useState, useEffect } from "react";
 import { skillMeters } from "@/data/portfolio";
 import { SectionHeading } from "./section-heading";
 
 export function SkillsSection() {
+  const [skills, setSkills] = useState(skillMeters);
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch("/api/skills");
+        if (response.ok) {
+          const data = await response.json();
+          setSkills(data.skills || skillMeters);
+        }
+      } catch (error) {
+        console.error("Failed to fetch skills:", error);
+        // Keep using default skills on error
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
   return (
     <section id="skills" className="relative flex flex-col gap-16 py-24">
       <SectionHeading
@@ -10,9 +30,9 @@ export function SkillsSection() {
         description="From data structures to design systems, I invest in versatile skills that keep ideas moving toward launch."
       />
       <div className="grid gap-6 lg:grid-cols-3">
-        {skillMeters.map((skill, index) => (
+        {skills.map((skill, index) => (
           <div
-            key={skill.name}
+            key={skill.name || skill.id}
             className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/60 p-4 shadow-inner-glow animate-float"
             style={{ animationDelay: `${index * 0.15}s` }}
           >

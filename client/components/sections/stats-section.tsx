@@ -7,7 +7,7 @@ export function StatsSection() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/admin/stats");
+        const response = await fetch("/api/stats");
         if (response.ok) {
           const data = await response.json();
           setStats(data.stats || defaultStats);

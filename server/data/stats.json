@@ -1,25 +1,25 @@
 [
   {
     "id": "achievements",
-    "value": "05+",
+    "value": "183+",
     "label": "Achievements",
     "description": "Recognised milestones across academic and freelance journeys."
   },
   {
     "id": "projects",
-    "value": "12+",
+    "value": "122+",
     "label": "Projects",
     "description": "Delivered across ecommerce, hospitality, analytics, and gaming."
   },
   {
     "id": "mentored",
-    "value": "70+",
+    "value": "707+",
     "label": "Mentored Students",
     "description": "Guided peers through coding, design thinking, and project planning."
   },
   {
     "id": "coffee",
-    "value": "15",
+    "value": "153",
     "label": "Cups of Coffee",
     "description": "Fueled creative problem solving during late-night sprints."
   }

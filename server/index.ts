@@ -99,6 +99,26 @@ export function createServer() {
     }
   });
 
+  app.get("/api/skills", async (_req, res) => {
+    try {
+      const { getSkills } = await import("./data-store");
+      const skills = getSkills();
+      res.json({ skills });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch skills" });
+    }
+  });
+
+  app.get("/api/stats", async (_req, res) => {
+    try {
+      const { getStats } = await import("./data-store");
+      const stats = getStats();
+      res.json({ stats });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
   // Admin routes
   app.use("/api/admin", adminRouter);
 

@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "id": "1763211075566",
+    "name": "frontend Developer"
+  },
+  {
+    "id": "1763211766787",
+    "name": "JavaScript"
+  },
+  {
+    "id": "1763211766793",
+    "name": "TypeScript"
+  },
+  {
+    "id": "1763211766793",
+    "name": "Node.js"
+  },
+  {
+    "id": "1763211766793",
+    "name": "Express.js"
+  },
+  {
+    "id": "1763211766793",
+    "name": "MongoDB"
+  },
+  {
+    "id": "1763211766793",
+    "name": "HTML/CSS"
+  }
+]

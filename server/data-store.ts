@@ -340,3 +340,31 @@ export function removeEducation(educationId: string) {
   educations = educations.filter((e: any) => e.id !== educationId);
   fs.writeFileSync(EDUCATION_FILE, JSON.stringify(educations, null, 2));
 }
+
+export function saveProfilePhoto(file: Express.Multer.File): string {
+  const profileDir = getProfilePhotoPath();
+  if (!fs.existsSync(profileDir)) {
+    fs.mkdirSync(profileDir, { recursive: true });
+  }
+
+  // Remove any existing profile photos
+  const existingFiles = fs.readdirSync(profileDir);
+  existingFiles.forEach(fileName => {
+    fs.unlinkSync(path.join(profileDir, fileName));
+  });
+
+  // Save the new profile photo with a fixed name
+  const fileName = 'profile.jpg';
+  const filePath = path.join(profileDir, fileName);
+  if (file.path) {
+    // If file is saved to disk by multer
+    fs.renameSync(file.path, filePath);
+  } else if (file.buffer) {
+    // If file is in memory
+    fs.writeFileSync(filePath, file.buffer);
+  } else {
+    throw new Error('No file data');
+  }
+
+  return `/uploads/profile/${fileName}`;
+}

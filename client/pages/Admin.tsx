@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, Plus, LogOut } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 
-const ADMIN_PASSWORD = "ShaheSabina31280412";
+const ADMIN_PASSWORD = "Shahe123";
+const API_BASE = "http://localhost:8081";
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -50,7 +52,7 @@ export default function Admin() {
 
   const fetchResumes = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/resumes");
+      const response = await fetch(`${API_BASE}/api/admin/resumes`);
       if (response.ok) {
         const data = await response.json();
         setResumes(data.resumes || []);
@@ -62,7 +64,7 @@ export default function Admin() {
 
   const fetchProfilePhoto = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/profile-photo");
+      const response = await fetch(`${API_BASE}/api/admin/profile-photo`);
       if (response.ok) {
         const data = await response.json();
         setCurrentProfilePhoto(data.path || null);
@@ -111,13 +113,22 @@ export default function Admin() {
     e.preventDefault();
     if (!profilePhoto) return;
 
-    const formData = new FormData();
-    formData.append('profile', profilePhoto);
-
     try {
-      console.log("Uploading profile photo:", profilePhoto.name, "Size:", profilePhoto.size);
+      // Compress the profile photo before upload
+      const options = {
+        maxSizeMB: 0.5, // Maximum size in MB for profile photos
+        maxWidthOrHeight: 800, // Maximum width or height
+        useWebWorker: true,
+      };
 
-      const response = await fetch("http://localhost:3000/api/admin/profile-photo-upload", {
+      const compressedFile = await imageCompression(profilePhoto, options);
+      console.log(`Original profile photo size: ${(profilePhoto.size / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`Compressed profile photo size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+
+      const formData = new FormData();
+      formData.append('profile', compressedFile);
+
+      const response = await fetch(`${API_BASE}/api/admin/profile-photo-upload`, {
         method: "POST",
         body: formData,
       });
@@ -150,7 +161,7 @@ export default function Admin() {
   const handleRemoveProfilePhoto = async () => {
     if (confirm('Are you sure you want to delete the current profile photo?')) {
       try {
-        const response = await fetch("http://localhost:3000/api/admin/profile-photo", {
+        const response = await fetch(`${API_BASE}/api/admin/profile-photo`, {
           method: "DELETE",
         });
 
@@ -178,13 +189,23 @@ export default function Admin() {
     e.preventDefault();
     if (!resume) return;
 
-    const formData = new FormData();
-    formData.append('resume', resume);
-
     try {
+      // For resume files, we'll just check size and proceed (no compression needed for PDFs)
+      if (resume.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "Error",
+          description: "Resume file size must be less than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log("Uploading resume:", resume.name, "Size:", resume.size);
 
-      const response = await fetch("http://localhost:3000/api/admin/resume", {
+      const formData = new FormData();
+      formData.append('resume', resume);
+
+      const response = await fetch(`${API_BASE}/api/admin/resume`, {
         method: "POST",
         body: formData,
       });
@@ -216,7 +237,7 @@ export default function Admin() {
 
   const deleteResume = async (fileName: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/resume/${fileName}`, {
+      const response = await fetch(`${API_BASE}/api/admin/resume/${fileName}`, {
         method: "DELETE",
       });
 
@@ -240,7 +261,7 @@ export default function Admin() {
 
   const fetchExperiences = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/experiences");
+      const response = await fetch(`${API_BASE}/api/admin/experiences`);
       if (response.ok) {
         const data = await response.json();
         setExperiences(data.experiences || []);
@@ -252,7 +273,7 @@ export default function Admin() {
 
   const fetchEducation = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/education");
+      const response = await fetch(`${API_BASE}/api/admin/education`);
       if (response.ok) {
         const data = await response.json();
         setEducation(data.education || []);
@@ -267,7 +288,7 @@ export default function Admin() {
     if (!expTitle.trim() || !expOrganisation.trim() || !expPeriod.trim() || !expDescription.trim()) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/admin/experiences", {
+      const response = await fetch(`${API_BASE}/api/admin/experiences`, {
         method: editingExperience ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingExperience ? {
@@ -318,7 +339,7 @@ export default function Admin() {
     if (!eduTitle.trim() || !eduInstitution.trim() || !eduPeriod.trim()) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/admin/education", {
+      const response = await fetch(`${API_BASE}/api/admin/education`, {
         method: editingEducation ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingEducation ? {
@@ -360,7 +381,7 @@ export default function Admin() {
 
   const removeExperience = async (expId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/experiences/${expId}`, {
+      const response = await fetch(`${API_BASE}/api/admin/experiences/${expId}`, {
         method: "DELETE",
       });
 
@@ -384,7 +405,7 @@ export default function Admin() {
 
   const removeEducation = async (eduId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/education/${eduId}`, {
+      const response = await fetch(`${API_BASE}/api/admin/education/${eduId}`, {
         method: "DELETE",
       });
 
@@ -408,7 +429,7 @@ export default function Admin() {
 
   const fetchSkills = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/skills");
+      const response = await fetch(`${API_BASE}/api/admin/skills`);
       if (response.ok) {
         const data = await response.json();
         setSkills(data.skills || []);
@@ -423,7 +444,7 @@ export default function Admin() {
     if (!skillName.trim()) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/admin/skills", {
+      const response = await fetch(`${API_BASE}/api/admin/skills`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -454,7 +475,7 @@ export default function Admin() {
 
   const removeSkill = async (skillId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/skills/${skillId}`, {
+      const response = await fetch(`${API_BASE}/api/admin/skills/${skillId}`, {
         method: "DELETE",
       });
 
@@ -478,7 +499,7 @@ export default function Admin() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/projects");
+      const response = await fetch(`${API_BASE}/api/admin/projects`);
       if (response.ok) {
         const data = await response.json();
         console.log("Fetched projects:", data.projects);
@@ -492,32 +513,48 @@ export default function Admin() {
   };
 
   const uploadProjectImage = async (file: File): Promise<string> => {
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onload = async (event) => {
-        try {
-          const response = await fetch("http://localhost:3000/api/admin/project-image", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileData: event.target?.result,
-              fileName: file.name,
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            resolve(data.path);
-          } else {
-            reject(new Error("Upload failed"));
-          }
-        } catch (error) {
-          reject(error);
-        }
+    try {
+      // Compress the image before upload
+      const options = {
+        maxSizeMB: 1, // Maximum size in MB
+        maxWidthOrHeight: 1920, // Maximum width or height
+        useWebWorker: true,
       };
-      reader.onerror = () => reject(new Error("File reading failed"));
-      reader.readAsDataURL(file);
-    });
+
+      const compressedFile = await imageCompression(file, options);
+      console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async (event) => {
+          try {
+            const response = await fetch(`${API_BASE}/api/admin/project-image`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                fileData: event.target?.result,
+                fileName: compressedFile.name,
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              resolve(data.path);
+            } else {
+              reject(new Error("Upload failed"));
+            }
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject(new Error("File reading failed"));
+        reader.readAsDataURL(compressedFile);
+      });
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      throw error;
+    }
   };
 
   const addProject = async (e: React.FormEvent) => {
@@ -544,7 +581,7 @@ export default function Admin() {
         year: new Date().getFullYear().toString(),
       };
 
-      const response = await fetch("http://localhost:3000/api/admin/projects", {
+      const response = await fetch(`${API_BASE}/api/admin/projects`, {
         method: editingProject ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingProject ? { ...projectData, id: editingProject.id } : projectData),
@@ -598,7 +635,7 @@ export default function Admin() {
 
   const deleteProject = async (projectId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/projects/${projectId}`, {
+      const response = await fetch(`${API_BASE}/api/admin/projects/${projectId}`, {
         method: "DELETE",
       });
 
@@ -622,7 +659,7 @@ export default function Admin() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/stats");
+      const response = await fetch(`${API_BASE}/api/admin/stats`);
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats || []);
@@ -634,7 +671,7 @@ export default function Admin() {
 
   const updateStat = async (statId: string, value: string, label: string, description: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/stats/${statId}`, {
+      const response = await fetch(`${API_BASE}/api/admin/stats/${statId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value, label, description }),
