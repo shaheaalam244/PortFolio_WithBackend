@@ -14,8 +14,8 @@ export function createServer() {
     fileFilter: (req, file, cb) => {
       // Allow PDF, DOC, DOCX files
       if (file.mimetype === 'application/pdf' ||
-          file.mimetype === 'application/msword' ||
-          file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        file.mimetype === 'application/msword' ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         cb(null, true);
       } else {
         cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
@@ -52,28 +52,18 @@ export function createServer() {
 
   app.get("/api/profile-photo", async (_req, res) => {
     try {
-      const { getProfilePhotoPath } = await import("./data-store");
-      const fs = await import("fs");
-      const path = await import("path");
+      const { getProfilePhoto } = await import("./data-store");
+      const photoData = getProfilePhoto();
 
-      const profileDir = getProfilePhotoPath();
-      if (!fs.existsSync(profileDir)) {
-        return res.json({ exists: false });
+      if (photoData.url) {
+        res.json({
+          exists: true,
+          path: photoData.url,
+          fileName: "profile",
+        });
+      } else {
+        res.json({ exists: false });
       }
-
-      const files = fs.readdirSync(profileDir);
-      if (files.length === 0) {
-        return res.json({ exists: false });
-      }
-
-      const photoFile = files[0];
-      const filePath = path.join(profileDir, photoFile);
-
-      res.json({
-        exists: true,
-        path: `/uploads/profile/${photoFile}`,
-        fileName: photoFile,
-      });
     } catch (error) {
       res.json({ exists: false });
     }
@@ -119,8 +109,27 @@ export function createServer() {
     }
   });
 
+  app.get("/api/hero-config", async (_req, res) => {
+    try {
+      const { getHeroConfig } = await import("./data-store");
+      const config = getHeroConfig();
+      res.json(config);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch hero config" });
+    }
+  });
+
   // Admin routes
   app.use("/api/admin", adminRouter);
+
+  // Global Error Handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("Server Error:", err);
+    res.status(500).json({
+      error: err.message || "Internal Server Error",
+      details: err.toString()
+    });
+  });
 
   return app;
 }

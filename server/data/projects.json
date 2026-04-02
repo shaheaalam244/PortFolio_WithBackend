@@ -1,139 +1,40 @@
 [
   {
-    "id": "1763025520375",
-    "title": "Updated Test",
-    "description": "Updated description",
-    "image": "",
-    "liveUrl": "",
-    "repoUrl": "",
+    "id": "1767352632957",
+    "title": "NORA AI",
+    "description": "Gemini se inspired ek fast AI assistant jo Gemini 2.5 Flash-style model par kaam karta hai. Ye quick responses, smart answers, content writing, aur daily tasks ke liye optimized hai. Speed, efficiency, aur simple user experience ke saath modern AI assistance deta hai.",
+    "image": "https://res.cloudinary.com/dlahaq91e/image/upload/v1767353233/portfolio-uploads/projects/Screenshot%202026-01-02%20at%204.png",
+    "liveUrl": "https://nora-ai-shaheaalam244.netlify.app/",
+    "repoUrl": "https://github.com/shaheaalam244/Nova_AI_Shaheaalam244",
     "badge": "Custom",
-    "highlights": [],
-    "tags": [],
-    "company": "Personal Project",
-    "year": "2025"
-  },
-  {
-    "id": "eflyer-shopping-platform",
-    "title": "Eflyer Shopping Platform",
-    "description": "One-stop ecommerce destination delivering trendy men's and women's fashion, accessories, and footwear.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/shop.png",
-    "liveUrl": "https://eflyers-shop.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/Eflyers-Shop",
-    "badge": "Commerce",
     "highlights": [
-      "Curated catalogue with promotional sections and spotlight offers.",
-      "Responsive layouts ensuring seamless browsing across devices.",
-      "High-converting CTA strategy driving purchases."
+      "Developed"
     ],
     "tags": [
-      "Ecommerce",
-      "Responsive",
-      "Netlify"
-    ],
-    "company": "Personal Project",
-    "year": "2024"
-  },
-  {
-    "id": "restaurant-delight",
-    "title": "Restaurant Delight",
-    "description": "A culinary landing page showcasing signature dishes, reservations, and delightful dining vibes.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/restro.png",
-    "liveUrl": "https://restorant-meal.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/Restaurant-Delight",
-    "badge": "Hospitality",
-    "highlights": [
-      "Hero spotlighting the dining experience with bold visuals.",
-      "Reservation prompts and feature highlights for customer trust.",
-      "Story-driven copy elevating brand voice."
-    ],
-    "tags": [
-      "Hospitality",
-      "Landing Page",
-      "Branding"
-    ],
-    "company": "Personal Project",
-    "year": "2024"
-  },
-  {
-    "id": "creative-web-agency",
-    "title": "Creative Web Agency",
-    "description": "Digital agency experience blending modern layouts with compelling service storytelling.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/webAgency.png",
-    "liveUrl": "https://web-agencys.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/Web-Agency",
-    "badge": "Services",
-    "highlights": [
-      "Service breakdowns highlighting web design, development, and marketing.",
-      "Testimonials and stats building credibility.",
-      "Newsletter capture and CTA-first architecture."
-    ],
-    "tags": [
-      "Agency",
-      "Marketing",
-      "UI Design"
-    ],
-    "company": "Personal Project",
-    "year": "2024"
-  },
-  {
-    "id": "organic-foods-delivery",
-    "title": "Organic Foods Delivery",
-    "description": "Sustainably sourced food delivery experience encouraging healthier living choices.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/fooddelivery.png",
-    "liveUrl": "https://organic-foods-doorstep.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/organic-foods",
-    "badge": "Growth",
-    "highlights": [
-      "Narrative storytelling with hero imagery and trust badges.",
-      "Curated product categories and nutritional insights.",
-      "Clear CTAs driving conversions and repeat orders."
-    ],
-    "tags": [
-      "Sustainability",
-      "CMS",
-      "Performance"
-    ],
-    "company": "Personal Project",
-    "year": "2024"
-  },
-  {
-    "id": "tic-tac-toe-ai",
-    "title": "Tic Tac Toe AI",
-    "description": "Interactive gaming experience challenging users against an unbeatable AI opponent.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/tictactoe.png",
-    "liveUrl": "https://tic-tac-toe-computer.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/Tic-Tac-Toe-AI",
-    "badge": "Play",
-    "highlights": [
-      "Sharp interface with instant feedback and turn indicators.",
-      "AI logic delivering tough competition and replayability.",
-      "Built with clean modular JavaScript."
-    ],
-    "tags": [
-      "Game",
+      "ReactJS",
       "JavaScript",
-      "AI"
+      "Gemini API's",
+      "HTML",
+      "CSS"
     ],
-    "company": "Personal Project",
+    "company": "Mini Project",
     "year": "2024"
   },
   {
-    "id": "womens-fashion-sale",
-    "title": "Women's Fashion Sale",
-    "description": "Trend-led landing page for a seasonal women's fashion sale with premium aesthetic.",
-    "image": "https://shahe-aalam-ansari.netlify.app/images/women.png",
-    "liveUrl": "https://women-sale.netlify.app/",
-    "repoUrl": "https://github.com/shahe-aalam/women-fashion",
-    "badge": "Campaign",
+    "id": "1767353546556",
+    "title": "PortFolio",
+    "description": "This is my old portfolio project built without a backend (frontend-only). It focuses on a clean UI, responsive design, and smooth user experience. The main goal of this project was to showcase my design skills, layout understanding, and basic frontend functionality.",
+    "image": "https://res.cloudinary.com/dlahaq91e/image/upload/v1767353546/portfolio-uploads/projects/Screenshot%202026-01-02%20at%205.png",
+    "liveUrl": "https://shahe-aalam-ansari.netlify.app/",
+    "repoUrl": "https://github.com/shaheaalam244/ShaheAalam",
+    "badge": "Free Time",
     "highlights": [
-      "Hero module highlighting limited-time offers.",
-      "Category segmentation tailored for shopper intent.",
-      "CTA stack encouraging sign-ups and purchases."
+      "UI/UX Design"
     ],
     "tags": [
-      "Campaign",
-      "Fashion",
-      "Conversions"
+      "HTML",
+      "CSS",
+      "JavaScript"
     ],
     "company": "Personal Project",
     "year": "2024"

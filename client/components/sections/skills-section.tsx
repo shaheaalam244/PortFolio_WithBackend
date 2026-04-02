@@ -32,7 +32,7 @@ export function SkillsSection() {
       <div className="grid gap-6 lg:grid-cols-3">
         {skills.map((skill, index) => (
           <div
-            key={skill.name || skill.id}
+            key={(skill as any).name || (skill as any).id}
             className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/60 p-4 shadow-inner-glow animate-float"
             style={{ animationDelay: `${index * 0.15}s` }}
           >

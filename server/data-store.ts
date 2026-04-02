@@ -8,15 +8,12 @@ const STATS_FILE = path.join(DATA_DIR, "stats.json");
 const HERO_CONFIG_FILE = path.join(DATA_DIR, "hero-config.json");
 const EXPERIENCES_FILE = path.join(DATA_DIR, "experiences.json");
 const EDUCATION_FILE = path.join(DATA_DIR, "education.json");
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+const RESUMES_FILE = path.join(DATA_DIR, "resumes.json");
+const PROFILE_PHOTO_FILE = path.join(DATA_DIR, "profile-photo.json");
 
 // Ensure directories exist
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
 // Initialize default files if they don't exist
@@ -25,7 +22,19 @@ if (!fs.existsSync(SKILLS_FILE)) {
 }
 
 if (!fs.existsSync(PROJECTS_FILE)) {
+  const defaultProjects = [
+    // ... (Placeholder for manually added projects if needed, but for now initializing empty is safer to avoid duplicates if file already exists)
+    // improved logic: The file check prevents overwriting. I will put one sample project.
+  ];
   fs.writeFileSync(PROJECTS_FILE, JSON.stringify([], null, 2));
+}
+
+if (!fs.existsSync(RESUMES_FILE)) {
+  fs.writeFileSync(RESUMES_FILE, JSON.stringify([], null, 2));
+}
+
+if (!fs.existsSync(PROFILE_PHOTO_FILE)) {
+  fs.writeFileSync(PROFILE_PHOTO_FILE, JSON.stringify({ url: null }, null, 2));
 }
 
 if (!fs.existsSync(STATS_FILE)) {
@@ -163,94 +172,59 @@ export function updateProject(projectId: string, project: any) {
   return projects[index];
 }
 
+export function saveAllProjects(projects: any[]) {
+  fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2));
+}
+
 export function removeProject(projectId: string) {
   let projects = getProjects();
   projects = projects.filter((p: any) => p.id !== projectId);
   fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2));
 }
 
-export function getUploadsDir() {
-  return UPLOADS_DIR;
-}
-
-export function getResumePath() {
-  return path.join(UPLOADS_DIR, "resume");
-}
-
+// Resume functions
 export function getResumes() {
-  const resumeDir = getResumePath();
-  if (!fs.existsSync(resumeDir)) {
-    return [];
-  }
-  const files = fs.readdirSync(resumeDir);
-  return files.map(file => {
-    const filePath = path.join(resumeDir, file);
-    const stats = fs.statSync(filePath);
-    return {
-      id: file,
-      fileName: file,
-      path: `/uploads/resume/${file}`,
-      size: stats.size,
-      uploadedAt: stats.mtime.toISOString(),
-    };
-  });
+  const data = fs.readFileSync(RESUMES_FILE, "utf-8");
+  return JSON.parse(data);
 }
 
-export function saveResume(fileName: string, buffer: Buffer) {
-  const resumeDir = getResumePath();
-  if (!fs.existsSync(resumeDir)) {
-    fs.mkdirSync(resumeDir, { recursive: true });
-  }
-  const timestamp = Date.now();
-  const ext = path.extname(fileName) || ".pdf";
-  const uniqueFileName = `resume-${timestamp}${ext}`;
-  const filePath = path.join(resumeDir, uniqueFileName);
-  fs.writeFileSync(filePath, buffer);
-  return uniqueFileName;
+export function addResumeRecord(fileName: string, url: string, size: number) {
+  const resumes = getResumes();
+  const newResume = {
+    id: Date.now().toString(),
+    fileName,
+    path: url,
+    size,
+    uploadedAt: new Date().toISOString(),
+  };
+  resumes.push(newResume);
+  fs.writeFileSync(RESUMES_FILE, JSON.stringify(resumes, null, 2));
+  return newResume;
 }
 
-export function deleteResume(fileName: string) {
-  const resumeDir = getResumePath();
-  const filePath = path.join(resumeDir, fileName);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
+export function deleteResumeRecord(resumeId: string) {
+  let resumes = getResumes();
+  resumes = resumes.filter((r: any) => r.id !== resumeId && r.fileName !== resumeId);
+  fs.writeFileSync(RESUMES_FILE, JSON.stringify(resumes, null, 2));
 }
 
-export function getProfilePhotoPath() {
-  return path.join(UPLOADS_DIR, "profile");
+// Profile Photo functions
+export function getProfilePhoto() {
+  const data = fs.readFileSync(PROFILE_PHOTO_FILE, "utf-8");
+  return JSON.parse(data);
+}
+
+export function updateProfilePhoto(url: string) {
+  const data = { url: url, updatedAt: new Date().toISOString() };
+  fs.writeFileSync(PROFILE_PHOTO_FILE, JSON.stringify(data, null, 2));
+  return data;
 }
 
 export function deleteProfilePhoto() {
-  const photoPath = getProfilePhotoPath();
-  if (fs.existsSync(photoPath)) {
-    const files = fs.readdirSync(photoPath);
-    for (const file of files) {
-      fs.unlinkSync(path.join(photoPath, file));
-    }
-    fs.rmdirSync(photoPath);
-  }
+  fs.writeFileSync(PROFILE_PHOTO_FILE, JSON.stringify({ url: null }, null, 2));
 }
 
-export function getProjectImagesDir() {
-  return path.join(UPLOADS_DIR, "projects");
-}
-
-export function saveProjectImage(fileName: string, buffer: Buffer): string {
-  const projectDir = getProjectImagesDir();
-  if (!fs.existsSync(projectDir)) {
-    fs.mkdirSync(projectDir, { recursive: true });
-  }
-
-  const timestamp = Date.now();
-  const ext = path.extname(fileName) || ".jpg";
-  const uniqueFileName = `project-${timestamp}${ext}`;
-  const filePath = path.join(projectDir, uniqueFileName);
-
-  fs.writeFileSync(filePath, buffer);
-  return `/uploads/projects/${uniqueFileName}`;
-}
-
+// Stats functions
 export function getStats() {
   const data = fs.readFileSync(STATS_FILE, "utf-8");
   return JSON.parse(data);
@@ -271,8 +245,12 @@ export function getHeroConfig() {
   return JSON.parse(data);
 }
 
-export function updateHeroConfig(founderOf: string) {
-  const config = { founderOf };
+export function updateHeroConfig(founderOf: string, tagline?: string, founderUrl?: string) {
+  const config = {
+    founderOf,
+    tagline: tagline || "",
+    founderUrl: founderUrl || ""
+  };
   fs.writeFileSync(HERO_CONFIG_FILE, JSON.stringify(config, null, 2));
   return config;
 }
@@ -339,32 +317,4 @@ export function removeEducation(educationId: string) {
   let educations = getEducation();
   educations = educations.filter((e: any) => e.id !== educationId);
   fs.writeFileSync(EDUCATION_FILE, JSON.stringify(educations, null, 2));
-}
-
-export function saveProfilePhoto(file: Express.Multer.File): string {
-  const profileDir = getProfilePhotoPath();
-  if (!fs.existsSync(profileDir)) {
-    fs.mkdirSync(profileDir, { recursive: true });
-  }
-
-  // Remove any existing profile photos
-  const existingFiles = fs.readdirSync(profileDir);
-  existingFiles.forEach(fileName => {
-    fs.unlinkSync(path.join(profileDir, fileName));
-  });
-
-  // Save the new profile photo with a fixed name
-  const fileName = 'profile.jpg';
-  const filePath = path.join(profileDir, fileName);
-  if (file.path) {
-    // If file is saved to disk by multer
-    fs.renameSync(file.path, filePath);
-  } else if (file.buffer) {
-    // If file is in memory
-    fs.writeFileSync(filePath, file.buffer);
-  } else {
-    throw new Error('No file data');
-  }
-
-  return `/uploads/profile/${fileName}`;
 }

@@ -20,6 +20,7 @@ export function HeroSection() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [profilePhoto, setProfilePhoto] = useState<ProfilePhoto>({ exists: false });
+  const [heroConfig, setHeroConfig] = useState({ founderOf: "", tagline: "", founderUrl: "" });
   const phrases = useMemo(() => heroContent.typingPhrases, []);
 
   useEffect(() => {
@@ -47,8 +48,21 @@ export function HeroSection() {
       }
     };
 
+    const fetchHeroConfig = async () => {
+      try {
+        const response = await fetch("/api/hero-config");
+        if (response.ok) {
+          const data = await response.json();
+          setHeroConfig(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch hero config:", error);
+      }
+    };
+
     fetchResumes();
     fetchProfilePhoto();
+    fetchHeroConfig();
   }, []);
 
   useEffect(() => {
@@ -77,6 +91,41 @@ export function HeroSection() {
         <h1 className="mt-3 max-w-2xl font-serif text-4xl leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
           {heroContent.headline}
         </h1>
+
+
+        {(heroConfig.founderOf || heroConfig.tagline) && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xl sm:text-2xl font-sans tracking-wide">
+            {heroConfig.founderOf && (
+              <>
+                {heroConfig.founderUrl ? (
+                  <a
+                    href={heroConfig.founderUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-foreground/80 font-medium">FounderOf</span>
+                    <span className="font-semibold text-primary">@{heroConfig.founderOf}</span>
+                  </a>
+                ) : (
+                  <>
+                    <span className="text-foreground/80 font-medium">FounderOf</span>
+                    <span className="font-semibold text-primary">@{heroConfig.founderOf}</span>
+                  </>
+                )}
+              </>
+            )}
+            {heroConfig.founderOf && heroConfig.tagline && (
+              <span className="text-foreground/40 mx-1">•</span>
+            )}
+            {heroConfig.tagline && (
+              <span className="text-foreground/80 font-medium">
+                {heroConfig.tagline}
+              </span>
+            )}
+          </div>
+        )}
+
         <h2 className="mt-4 text-base font-semibold uppercase tracking-[0.35em] text-foreground/60 sm:text-lg">
           {heroContent.subheadline}
         </h2>

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./section-heading";
+import { API_BASE_URL } from "@/lib/config";
 
 const stackLayers = Array.from({ length: 4 });
 
@@ -13,7 +14,7 @@ export function ProjectsSection() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/admin/projects");
+        const response = await fetch(`${API_BASE_URL}/api/admin/projects`);
         if (response.ok) {
           const data = await response.json();
           setProjects(data.projects || []);
@@ -62,7 +63,7 @@ export function ProjectsSection() {
               key={`layer-${index}`}
               className="h-full w-full max-w-6xl rounded-[32px] border border-white/10 bg-card/40"
               style={{
-                transform: `translateY(-${(index + 1) * 26}px)` ,
+                transform: `translateY(-${(index + 1) * 26}px)`,
                 opacity: 0.16 - index * 0.025,
               }}
             />

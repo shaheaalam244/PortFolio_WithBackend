@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Plus, LogOut } from "lucide-react";
+import { Trash2, Plus, LogOut, ArrowUp, ArrowDown } from "lucide-react";
 import imageCompression from 'browser-image-compression';
 
+import { API_BASE_URL } from "@/lib/config";
+
 const ADMIN_PASSWORD = "Shahe123";
-const API_BASE = "http://localhost:8081";
+const API_BASE = API_BASE_URL;
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -24,6 +27,11 @@ export default function Admin() {
   const [projectImage, setProjectImage] = useState<File | null>(null);
   const [projectLiveUrl, setProjectLiveUrl] = useState("");
   const [projectRepoUrl, setProjectRepoUrl] = useState("");
+  const [projectHighlights, setProjectHighlights] = useState("");
+  const [projectTags, setProjectTags] = useState("");
+  const [projectCompany, setProjectCompany] = useState("");
+  const [projectYear, setProjectYear] = useState("");
+  const [projectBadge, setProjectBadge] = useState("");
   const [editingProject, setEditingProject] = useState<any | null>(null);
   const [editingExperience, setEditingExperience] = useState<any | null>(null);
   const [editingEducation, setEditingEducation] = useState<any | null>(null);
@@ -42,13 +50,60 @@ export default function Admin() {
   const [expDescription, setExpDescription] = useState("");
   const [expSkills, setExpSkills] = useState("");
 
+
+
   // Education form states
   const [eduPeriod, setEduPeriod] = useState("");
   const [eduTitle, setEduTitle] = useState("");
   const [eduInstitution, setEduInstitution] = useState("");
   const [eduDetail, setEduDetail] = useState("");
+  // Hero Config state
+  const [heroFounderOf, setHeroFounderOf] = useState("");
+  const [heroTagline, setHeroTagline] = useState("");
+  const [heroFounderUrl, setHeroFounderUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+
+  const fetchHeroConfig = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/hero-config`);
+      if (response.ok) {
+        const data = await response.json();
+        setHeroFounderOf(data.founderOf || "");
+        setHeroTagline(data.tagline || "");
+        setHeroFounderUrl(data.founderUrl || "");
+      }
+    } catch (error) {
+      console.error("Failed to fetch hero config:", error);
+    }
+  };
+
+  const handleUpdateHeroConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/hero-config`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ founderOf: heroFounderOf, tagline: heroTagline, founderUrl: heroFounderUrl }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Hero configuration updated",
+        });
+        fetchHeroConfig();
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update hero config",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchResumes = async () => {
     try {
@@ -81,6 +136,7 @@ export default function Admin() {
       fetchStats();
       fetchResumes();
       fetchProfilePhoto();
+      fetchHeroConfig();
       fetchExperiences();
       fetchEducation();
     }
@@ -542,7 +598,11 @@ export default function Admin() {
               const data = await response.json();
               resolve(data.path);
             } else {
-              reject(new Error("Upload failed"));
+              if (response.status === 404) {
+                reject(new Error("API Endpoint not found. Please restart the backend server."));
+              } else {
+                reject(new Error(`Upload failed with status: ${response.status}`));
+              }
             }
           } catch (error) {
             reject(error);
@@ -574,17 +634,21 @@ export default function Admin() {
         image: imagePath,
         liveUrl: projectLiveUrl,
         repoUrl: projectRepoUrl,
-        badge: "Custom",
-        highlights: [],
-        tags: [],
-        company: "Personal Project",
-        year: new Date().getFullYear().toString(),
+        badge: projectBadge || "Custom",
+        highlights: projectHighlights.split(",").map(s => s.trim()).filter(s => s),
+        tags: projectTags.split(",").map(s => s.trim()).filter(s => s),
+        company: projectCompany || "Personal Project",
+        year: projectYear || new Date().getFullYear().toString(),
       };
 
-      const response = await fetch(`${API_BASE}/api/admin/projects`, {
+      const url = editingProject
+        ? `${API_BASE}/api/admin/projects/${editingProject.id}`
+        : `${API_BASE}/api/admin/projects`;
+
+      const response = await fetch(url, {
         method: editingProject ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingProject ? { ...projectData, id: editingProject.id } : projectData),
+        body: JSON.stringify(projectData),
       });
 
       if (response.ok) {
@@ -598,6 +662,11 @@ export default function Admin() {
         setProjectImage(null);
         setProjectLiveUrl("");
         setProjectRepoUrl("");
+        setProjectHighlights("");
+        setProjectTags("");
+        setProjectCompany("");
+        setProjectYear("");
+        setProjectBadge("");
         setEditingProject(null);
         await fetchProjects();
         console.log("Projects fetched after add/update");
@@ -621,6 +690,11 @@ export default function Admin() {
     setProjectDesc(project.description);
     setProjectLiveUrl(project.liveUrl || "");
     setProjectRepoUrl(project.repoUrl || "");
+    setProjectHighlights(project.highlights?.join(", ") || "");
+    setProjectTags(project.tags?.join(", ") || "");
+    setProjectCompany(project.company || "");
+    setProjectYear(project.year || "");
+    setProjectBadge(project.badge || "");
     setProjectImage(null); // Reset image since we can't pre-fill file input
   };
 
@@ -631,6 +705,11 @@ export default function Admin() {
     setProjectImage(null);
     setProjectLiveUrl("");
     setProjectRepoUrl("");
+    setProjectHighlights("");
+    setProjectTags("");
+    setProjectCompany("");
+    setProjectYear("");
+    setProjectBadge("");
   };
 
   const deleteProject = async (projectId: string) => {
@@ -654,6 +733,44 @@ export default function Admin() {
         description: "Failed to delete project",
         variant: "destructive",
       });
+    }
+  };
+
+  const moveProject = async (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === projects.length - 1)
+    ) {
+      return;
+    }
+
+    const newProjects = [...projects];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // Swap
+    [newProjects[index], newProjects[targetIndex]] = [newProjects[targetIndex], newProjects[index]];
+
+    setProjects(newProjects);
+
+    // Persist order
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/projects/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projects: newProjects }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save order");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save new order",
+        variant: "destructive",
+      });
+      // Revert state if needed? For now we just show error.
+      fetchProjects();
     }
   };
 
@@ -799,7 +916,6 @@ export default function Admin() {
                       variant="destructive"
                       size="sm"
                       onClick={handleRemoveProfilePhoto}
-                      disabled={!currentProfilePhoto}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Remove Photo
@@ -807,11 +923,77 @@ export default function Admin() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Hero Section Configuration</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateHeroConfig} className="space-y-4">
+                    <div className="grid gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Company Name (e.g. RoomSarthi) - Will show as "FounderOf @Name"</label>
+                        <Input
+                          value={heroFounderOf}
+                          onChange={(e) => setHeroFounderOf(e.target.value)}
+                          placeholder="Enter your position..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Company URL (e.g. https://roomsarthi.com)</label>
+                        <Input
+                          value={heroFounderUrl}
+                          onChange={(e) => setHeroFounderUrl(e.target.value)}
+                          placeholder="Enter company URL..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Tagline (e.g. "Building the future of web")</label>
+                        <Input
+                          value={heroTagline}
+                          onChange={(e) => setHeroTagline(e.target.value)}
+                          placeholder="Enter your tagline..."
+                        />
+                      </div>
+                      <div className="flex gap-4">
+                        <Button type="submit" className="flex-1">Update Hero Config</Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={async () => {
+                            if (confirm("Are you sure you want to clear the hero configuration?")) {
+                              setHeroFounderOf("");
+                              setHeroTagline("");
+                              setHeroFounderUrl("");
+                              // Trigger update with empty values
+                              try {
+                                const response = await fetch(`${API_BASE}/api/admin/hero-config`, {
+                                  method: "PUT",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ founderOf: "", tagline: "", founderUrl: "" }),
+                                });
+                                if (response.ok) {
+                                  toast({ title: "Success", description: "Configuration cleared" });
+                                  fetchHeroConfig();
+                                }
+                              } catch (e) {
+                                toast({ title: "Error", description: "Failed to clear", variant: "destructive" });
+                              }
+                            }
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
           {/* Resume Tab */}
-          <TabsContent value="resume">
+          < TabsContent value="resume" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -886,10 +1068,10 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent >
 
           {/* Skills Tab */}
-          <TabsContent value="skills">
+          < TabsContent value="skills" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -956,10 +1138,10 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent >
 
           {/* Projects Tab */}
-          <TabsContent value="projects">
+          < TabsContent value="projects" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -978,11 +1160,10 @@ export default function Admin() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Description</label>
-                      <textarea
+                      <Textarea
                         value={projectDesc}
-                        onChange={(e) => setProjectDesc(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProjectDesc(e.target.value)}
                         placeholder="Project description"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         rows={3}
                         required
                       />
@@ -1019,6 +1200,48 @@ export default function Admin() {
                         value={projectRepoUrl}
                         onChange={(e) => setProjectRepoUrl(e.target.value)}
                         placeholder="https://github.com/..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Company / Context</label>
+                        <Input
+                          value={projectCompany}
+                          onChange={(e) => setProjectCompany(e.target.value)}
+                          placeholder="e.g. Personal Project"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Year</label>
+                        <Input
+                          value={projectYear}
+                          onChange={(e) => setProjectYear(e.target.value)}
+                          placeholder="e.g. 2024"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Badge (Optional)</label>
+                      <Input
+                        value={projectBadge}
+                        onChange={(e) => setProjectBadge(e.target.value)}
+                        placeholder="e.g. Startup, Client Work"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Highlights (comma separated)</label>
+                      <Input
+                        value={projectHighlights}
+                        onChange={(e) => setProjectHighlights(e.target.value)}
+                        placeholder="e.g. Founded & Developed, User-centric Design"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Tech Stack / Tags (comma separated)</label>
+                      <Input
+                        value={projectTags}
+                        onChange={(e) => setProjectTags(e.target.value)}
+                        placeholder="e.g. React, Node.js, MongoDB"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -1095,6 +1318,30 @@ export default function Admin() {
                               </Button>
                             </div>
                           </div>
+
+                          {/* Reordering Controls */}
+                          <div className="flex gap-2 mt-4 justify-end border-t border-white/5 pt-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={projects.indexOf(project) === 0}
+                              onClick={() => moveProject(projects.indexOf(project), 'up')}
+                              title="Move Up"
+                              className="h-8 px-2"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={projects.indexOf(project) === projects.length - 1}
+                              onClick={() => moveProject(projects.indexOf(project), 'down')}
+                              title="Move Down"
+                              className="h-8 px-2"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))
                     )}
@@ -1102,10 +1349,10 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent >
 
           {/* Stats Tab */}
-          <TabsContent value="stats">
+          < TabsContent value="stats" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -1177,15 +1424,14 @@ export default function Admin() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">Description</label>
-                          <textarea
+                          <Textarea
                             value={stat.description}
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                               const updated = stats.map((s: any) =>
                                 s.id === stat.id ? { ...s, description: e.target.value } : s
                               );
                               setStats(updated);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             rows={2}
                           />
                         </div>
@@ -1203,10 +1449,10 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent >
 
           {/* Experience Tab */}
-          <TabsContent value="experience">
+          < TabsContent value="experience" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -1251,11 +1497,10 @@ export default function Admin() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Description</label>
-                      <textarea
+                      <Textarea
                         value={expDescription}
-                        onChange={(e) => setExpDescription(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setExpDescription(e.target.value)}
                         placeholder="Experience description"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         rows={3}
                         required
                       />
@@ -1355,10 +1600,10 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent >
 
           {/* Education Tab */}
-          <TabsContent value="education">
+          < TabsContent value="education" >
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -1395,11 +1640,10 @@ export default function Admin() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Detail</label>
-                      <textarea
+                      <Textarea
                         value={eduDetail}
-                        onChange={(e) => setEduDetail(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEduDetail(e.target.value)}
                         placeholder="Additional details"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         rows={2}
                       />
                     </div>
@@ -1478,9 +1722,9 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+          </TabsContent >
+        </Tabs >
+      </div >
+    </div >
   );
 }

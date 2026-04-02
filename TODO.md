@@ -1,18 +1,17 @@
-# Project Integration Plan
+# Render Deployment TODO
 
-## Tasks
-- [x] Move default projects from portfolio.ts to admin-managed projects.json
-- [x] Update projects-section.tsx to only use admin projects
-- [x] Remove default projects from portfolio.ts
-- [x] Add public API endpoints for skills and stats
-- [x] Update SkillsSection to fetch from admin-managed skills.json
-- [x] Update StatsSection to use public /api/stats endpoint
-- [x] Update ExperienceSection to use public /api/experiences and /api/education endpoints
-- [ ] Test admin panel Projects tab loads and displays all projects
-- [ ] Test Add/Edit/Delete operations work correctly
-- [ ] Test Project images display properly
-- [ ] Test Home page projects section shows all projects correctly
-- [ ] Test No duplicate projects appear
-- [ ] Test Skills section displays admin-managed skills
-- [ ] Test Stats section displays admin-managed stats
-- [ ] Test Experience section displays admin-managed experiences and education
+## Steps Completed
+- [x] 1. Created TODO.md for tracking
+- [x] 2. Created .env.example
+- [x] 3. Edited server/node-build.ts (port fallback to 5000)
+
+## Steps Pending
+- [ ] 4. Update README.md with Render deployment guide + checklist
+- [ ] 5. Verify .gitignore (.env)
+- [ ] 6. Test: npm run build && npm start
+- [ ] 7. Ready for GitHub push + Render deploy (user handles)
+
+**Status**: 6/7 complete - README_RENDER.md created with full Render guide ✓
+Test command: `npm run build && npm start`
+Ready for GitHub push & Render deploy!
+

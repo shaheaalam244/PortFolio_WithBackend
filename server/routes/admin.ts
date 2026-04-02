@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
-import * as path from "path";
-import * as fs from "fs";
+import { storage, cloudinary } from "../cloudinary";
 import {
   getSkills,
   addSkill,
@@ -10,14 +9,12 @@ import {
   addProject,
   updateProject,
   removeProject,
-  getUploadsDir,
-  getResumePath,
   getResumes,
-  saveResume,
-  deleteResume,
-  getProfilePhotoPath,
+  addResumeRecord,
+  deleteResumeRecord,
+  getProfilePhoto,
+  updateProfilePhoto,
   deleteProfilePhoto,
-  saveProjectImage,
   getStats,
   updateStat,
   getHeroConfig,
@@ -34,31 +31,25 @@ import {
 
 const router = Router();
 
-// Configure multer for file uploads
+// Configure multer with Cloudinary storage and file validation
 const upload = multer({
+  storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
-    // Allow PDF, DOC, DOCX files
-    if (file.mimetype === 'application/pdf' ||
-        file.mimetype === 'application/msword' ||
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
-    }
-  }
-});
+    // Allowed mime types
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
 
-// Configure multer for profile photo uploads
-const uploadProfile = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    // Allow image files
-    if (file.mimetype.startsWith('image/')) {
+    if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Invalid file type. Only JPG, PNG, PDF, DOC, and DOCX are allowed.'));
     }
   }
 });
@@ -158,6 +149,26 @@ router.put("/projects/:projectId", (req: Request, res: Response) => {
   }
 });
 
+// Reorder endpoint
+router.put("/projects/reorder", (req: Request, res: Response) => {
+  try {
+    const { projects } = req.body;
+    if (!Array.isArray(projects)) {
+      return res.status(400).json({ error: "Invalid projects data" });
+    }
+
+    // Import saveAllProjects dynamically to avoid circular dependency issues if any,
+    // though here we are in same context.
+    // Actually we need to export it from data-store first.
+    // We already added it.
+    const { saveAllProjects } = require("../data-store");
+    saveAllProjects(projects);
+    res.json({ success: true, projects });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to reorder projects" });
+  }
+});
+
 router.delete("/projects/:projectId", (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
@@ -165,35 +176,6 @@ router.delete("/projects/:projectId", (req: Request, res: Response) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete project" });
-  }
-});
-
-// Profile photo endpoints (base64 version - kept for backward compatibility)
-router.post("/profile-photo", (req: Request, res: Response) => {
-  try {
-    const { fileData, fileName } = req.body;
-
-    if (!fileData) {
-      return res.status(400).json({ error: "No file data provided" });
-    }
-
-    // Delete old profile photo
-    deleteProfilePhoto();
-
-    const profileDir = getProfilePhotoPath();
-    if (!fs.existsSync(profileDir)) {
-      fs.mkdirSync(profileDir, { recursive: true });
-    }
-
-    // Decode base64 and save file
-    const buffer = Buffer.from(fileData.split(",")[1] || fileData, "base64");
-    const ext = path.extname(fileName) || ".jpg";
-    const filePath = path.join(profileDir, `profile${ext}`);
-
-    fs.writeFileSync(filePath, buffer);
-    res.json({ success: true, path: `/uploads/profile/profile${ext}` });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to upload profile photo" });
   }
 });
 
@@ -214,23 +196,25 @@ router.post("/resume", upload.single('resume'), (req: Request, res: Response) =>
     }
 
     const fileName = req.file.originalname;
-    const buffer = req.file.buffer;
+    const url = req.file.path;
+    const size = req.file.size;
 
-    const savedFileName = saveResume(fileName, buffer);
+    const savedResume = addResumeRecord(fileName, url, size);
 
-    console.log(`Resume saved successfully: ${savedFileName}, Size: ${buffer.length} bytes`);
-    res.json({ success: true, path: `/uploads/resume/${savedFileName}` });
+    console.log(`Resume saved successfully: ${fileName}, URL: ${url}`);
+    res.json({ success: true, path: url });
   } catch (error) {
     console.error("Resume upload error:", error);
     res.status(500).json({ error: "Failed to upload resume: " + (error instanceof Error ? error.message : "Unknown error") });
   }
 });
 
-router.delete("/resume/:fileName", (req: Request, res: Response) => {
+router.delete("/resume/:resumeId", (req: Request, res: Response) => {
   try {
-    const { fileName } = req.params;
-    deleteResume(fileName);
-    console.log(`Resume ${fileName} deleted successfully`);
+    const { resumeId } = req.params;
+    deleteResumeRecord(resumeId);
+    console.log(`Resume record ${resumeId} deleted`);
+    // Note: This does not delete from Cloudinary automatically
     res.json({ success: true });
   } catch (error) {
     console.error("Error deleting resume:", error);
@@ -238,8 +222,8 @@ router.delete("/resume/:fileName", (req: Request, res: Response) => {
   }
 });
 
-// Project image endpoint
-router.post("/project-image", (req: Request, res: Response) => {
+// Project image endpoint (Base64 upload support)
+router.post("/project-image", async (req: Request, res: Response) => {
   try {
     const { fileData, fileName } = req.body;
 
@@ -247,12 +231,16 @@ router.post("/project-image", (req: Request, res: Response) => {
       return res.status(400).json({ error: "No file data provided" });
     }
 
-    // Decode base64 and save file
-    const buffer = Buffer.from(fileData.split(",")[1] || fileData, "base64");
-    const imagePath = saveProjectImage(fileName, buffer);
+    // Upload base64 to Cloudinary
+    const result = await cloudinary.uploader.upload(fileData, {
+      folder: "portfolio-uploads/projects",
+      resource_type: "image",
+      public_id: fileName ? fileName.split('.')[0] : undefined, // Optional: use filename as public_id
+    });
 
-    res.json({ success: true, path: imagePath });
+    res.json({ success: true, path: result.secure_url });
   } catch (error) {
+    console.error("Project image upload error:", error);
     res.status(500).json({ error: "Failed to upload project image" });
   }
 });
@@ -286,61 +274,57 @@ router.put("/stats/:statId", (req: Request, res: Response) => {
 // Profile photo endpoints
 router.get("/profile-photo", (_req: Request, res: Response) => {
   try {
-    const profileDir = getProfilePhotoPath();
-    if (!fs.existsSync(profileDir)) {
-      return res.json({ exists: false });
+    const photoData = getProfilePhoto();
+    if (photoData.url) {
+      res.json({
+        exists: true,
+        path: photoData.url,
+        fileName: "profile",
+      });
+    } else {
+      res.json({ exists: false });
     }
-
-    const files = fs.readdirSync(profileDir);
-    if (files.length === 0) {
-      return res.json({ exists: false });
-    }
-
-    const photoFile = files[0];
-    const filePath = path.join(profileDir, photoFile);
-
-    res.json({
-      exists: true,
-      path: `/uploads/profile/${photoFile}`,
-      fileName: photoFile,
-    });
   } catch (error) {
     res.json({ exists: false });
   }
 });
 
-// Profile photo endpoints (multer version)
-router.post("/profile-photo-upload", uploadProfile.single('profile'), (req: Request, res: Response) => {
+// Profile photo upload (Multer with Cloudinary)
+router.post("/profile-photo-upload", upload.single('profile'), (req: Request, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileName = req.file.originalname;
-    const buffer = req.file.buffer;
+    const url = req.file.path;
+    updateProfilePhoto(url);
 
-    // Delete old profile photo
-    try {
-      deleteProfilePhoto();
-    } catch (e) {
-      console.error("Error deleting old profile photo:", e);
-    }
-
-    const profileDir = getProfilePhotoPath();
-    if (!fs.existsSync(profileDir)) {
-      fs.mkdirSync(profileDir, { recursive: true });
-    }
-
-    const ext = path.extname(fileName) || ".jpg";
-    const filePath = path.join(profileDir, `profile${ext}`);
-
-    fs.writeFileSync(filePath, buffer);
-
-    console.log(`Profile photo saved successfully: ${filePath}, Size: ${buffer.length} bytes`);
-    res.json({ success: true, path: `/uploads/profile/profile${ext}` });
+    console.log(`Profile photo saved successfully: ${url}`);
+    res.json({ success: true, path: url });
   } catch (error) {
     console.error("Profile photo upload error:", error);
     res.status(500).json({ error: "Failed to upload profile photo: " + (error instanceof Error ? error.message : "Unknown error") });
+  }
+});
+
+// Legacy profile-photo endpoint (Base64) - keeping for compatibility if needed, but updated to Cloudinary
+router.post("/profile-photo", async (req: Request, res: Response) => {
+  try {
+    const { fileData } = req.body;
+
+    if (!fileData) {
+      return res.status(400).json({ error: "No file data provided" });
+    }
+
+    const result = await cloudinary.uploader.upload(fileData, {
+      folder: "portfolio-uploads/profile",
+      resource_type: "image",
+    });
+
+    updateProfilePhoto(result.secure_url);
+    res.json({ success: true, path: result.secure_url });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to upload profile photo" });
   }
 });
 
@@ -367,8 +351,8 @@ router.get("/hero-config", (_req: Request, res: Response) => {
 
 router.put("/hero-config", (req: Request, res: Response) => {
   try {
-    const { founderOf } = req.body;
-    const config = updateHeroConfig(founderOf || "");
+    const { founderOf, tagline, founderUrl } = req.body;
+    const config = updateHeroConfig(founderOf || "", tagline || "", founderUrl || "");
     res.json(config);
   } catch (error) {
     res.status(500).json({ error: "Failed to update hero config" });
@@ -490,7 +474,5 @@ router.delete("/education/:educationId", (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to remove education" });
   }
 });
-
-
 
 export default router;
